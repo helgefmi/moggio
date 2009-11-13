@@ -1,5 +1,5 @@
-import pychess.util
-from pychess.defines import *
+import moggio.util
+from moggio.defines import *
 
 """Includes the State class"""
 
@@ -54,8 +54,8 @@ class State:
 
             else:
                 try:
-                    piece = pychess.util.char_to_piece(c)
-                    color = pychess.util.char_to_color(c)
+                    piece = moggio.util.char_to_piece(c)
+                    color = moggio.util.char_to_color(c)
                     self.pieces[color][piece] |= (1L << piece_idx)
                 except KeyError:
                     raise Exception("Invalid FEN: '%s'" % fen)
@@ -87,15 +87,15 @@ class State:
         # Set en passant
         fen_passant = fen_parts.pop(0)
         if fen_passant != '-':
-            square_idx = pychess.util.chars_to_square(fen_passant)
+            square_idx = moggio.util.chars_to_square(fen_passant)
             self.en_passant = (1L << square_idx)
 
         # TODO: Halfmove and Fullmove numbers from FEN
 
     def __str__(self):
         """Makes a pretty string, representing a position"""
-        seperator = '+---+---+---+---+---+---+---+---+'
-        ret = seperator + '\n'
+        seperator = '+---+---+---+---+---+---+---+---+\n'
+        ret = seperator
 
         for y in xrange(7, -1, -1):
             ret += '|'
@@ -106,7 +106,7 @@ class State:
                 found = None
                 for color, piece in PIECES:
                     if self.pieces[color][piece] & idx:
-                        found = pychess.util.piece_to_char(color, piece)
+                        found = moggio.util.piece_to_char(color, piece)
                         break
 
                 extra = ' '
@@ -116,14 +116,14 @@ class State:
                     extra = '*'
 
                 if found:
-                    ret += ' ' + pychess.util.piece_to_char(color, piece) + extra + '|'
+                    ret += ' ' + moggio.util.piece_to_char(color, piece) + extra + '|'
                 else:
                     squareColor = '  '
                     if (y ^ x) & 1 == 0:
                         squareColor = ' .'
                     ret += squareColor + extra + '|'
 
-            ret += "\n" + seperator + '\n'
+            ret += "\n" + seperator
 
         ret += 'Turn: %s' % ('White', 'Black')[self.turn]
         ret += "\n"
