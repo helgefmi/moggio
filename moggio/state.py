@@ -1,5 +1,5 @@
 import moggio.util
-from moggio.defines import *
+import moggio.defines as defines
 
 """Includes the State class"""
 
@@ -12,6 +12,7 @@ class State:
         turn        - Who's turn it is
         castling    - Castling availability
         en_passant  - En passant availability
+        occupied    - Which squares are occupied by white, black, or both
     """
 
     def __init__(self, fen=None):
@@ -24,12 +25,15 @@ class State:
     def reset(self):
         """Forgets everything about the current state."""
         self.pieces = (
-            [0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0]
+            [0, 0, 0, 0, 0, 0], # WHITE
+            [0, 0, 0, 0, 0, 0]  # BLACK
         )
-        self.turn = WHITE
+        self.turn = defines.WHITE
         self.castling = 0
         self.en_passant = None
+        self.occupied = [
+            0, 0, 0 # WHITE, BLACK, BOTH
+        ]
 
     def set_fen(self, fen):
         """Sets the board according to Forsyth-Edwards Notation.
@@ -48,10 +52,8 @@ class State:
         for c in fen_position:
             if c == '/':
                 piece_idx -= 2 * 8
-
             elif c in numbers:
                 piece_idx += int(c)
-
             else:
                 try:
                     piece = moggio.util.char_to_piece(c)
@@ -62,13 +64,16 @@ class State:
                 else:
                     piece_idx += 1
 
+        # Update self.occupied with the occupied squares in self.pieces
+        moggio.util.set_occupied(self.occupied, self.pieces)
+
         # Set active color
         fen_color = fen_parts.pop(0)
 
         if fen_color.lower() == 'w':
-            self.turn = WHITE
+            self.turn = defines.WHITE
         elif fen_color.lower() == 'b':
-            self.turn = BLACK
+            self.turn = defines.BLACK
         else:
             raise Exception("Invalid FEN: '%s'" % fen)
 
@@ -104,7 +109,7 @@ class State:
                 idx = 1L << (y * 8 + x)
 
                 found = None
-                for color, piece in PIECES:
+                for color, piece in defines.PIECES:
                     if self.pieces[color][piece] & idx:
                         found = moggio.util.piece_to_char(color, piece)
                         break

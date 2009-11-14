@@ -1,7 +1,10 @@
+"""Some convenient variables to make the rest of the code clearer"""
+
 FEN_INIT = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
 WHITE = 0
 BLACK = 1
+BOTH = 2
 
 PAWN = 0
 KNIGHT = 1
