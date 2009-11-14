@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
-from moggio.state import State
-from moggio.defines import FEN_INIT
+import moggio.state
+import moggio.defines as defines
+import moggio.cache
 
-a = State(FEN_INIT)
-print a
+moggio.cache.preprocess()
+
+position = moggio.state.State(defines.FEN_INIT)
+print position
+

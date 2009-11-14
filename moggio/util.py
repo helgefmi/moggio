@@ -2,7 +2,7 @@ import string
 
 import moggio.defines as defines
 
-"""A collection of helper-functions for the moggio library"""
+"""A collection of helper-functions for the moggio library."""
 
 # Used to convert numerical indices to character-representation and backwards.
 _pieces_to_int = {
@@ -16,11 +16,11 @@ _pieces_to_int = {
 
 
 def char_to_piece(c):
-    """Converts a piece in character-representation to its numerical piece-value"""
+    """Converts a piece in character-representation to its numerical piece-value."""
     return _pieces_to_int[c]
 
 def char_to_color(c):
-    """Converts a piece in character-representation to its numerical color-value"""
+    """Converts a piece in character-representation to its numerical color-value."""
     if c in string.uppercase:
         return defines.WHITE
     else:
@@ -54,8 +54,6 @@ def piece_to_char(color, piece):
 def int_to_bitmap(n):
     """Converts a 64bit integer to a bitmap string-representation."""
 
-    n = n % (2 ** 64 - 1) # Make sure it's 64 bits long
-
     ret = ''
     # Iterate in the order of a chess board (A1 has index 0)
     for y in xrange(7, -1, -1):
@@ -71,7 +69,10 @@ def int_to_bitmap(n):
     return ret
 
 def set_occupied(occupied, pieces):
-    """Sets up 'occupied' to reflect the occupied squares in 'pieces'"""
+    """Sets up 'occupied' to reflect the occupied squares in 'pieces'
+    
+       Both parameters are a part of the State class
+    """
     occupied[defines.WHITE] = occupied[defines.BLACK] = occupied[defines.BOTH] = 0
 
     for color, piece in defines.PIECES:

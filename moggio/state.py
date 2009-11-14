@@ -1,18 +1,18 @@
 import moggio.util
 import moggio.defines as defines
 
-"""Includes the State class"""
+"""Includes the State class."""
 
 class State:
 
-    """Represents the state of a position on the chess board
+    """Represents the state of a position on the chess board.
 
         This class has the variables:
-        pieces      - set of bitboards
-        turn        - Who's turn it is
-        castling    - Castling availability
-        en_passant  - En passant availability
-        occupied    - Which squares are occupied by white, black, or both
+        pieces      - Set of bitboards representing the pieces position on the board.
+        turn        - Who's turn it is.
+        castling    - Castling availability.
+        en_passant  - En passant availability.
+        occupied    - Which squares are occupied by white, black, or both.
     """
 
     def __init__(self, fen=None):
@@ -64,10 +64,10 @@ class State:
                 else:
                     piece_idx += 1
 
-        # Update self.occupied with the occupied squares in self.pieces
+        # Update self.occupied with the occupied squares in self.pieces.
         moggio.util.set_occupied(self.occupied, self.pieces)
 
-        # Set active color
+        # Set active color.
         fen_color = fen_parts.pop(0)
 
         if fen_color.lower() == 'w':
@@ -77,7 +77,7 @@ class State:
         else:
             raise Exception("Invalid FEN: '%s'" % fen)
 
-        # Set castling availability
+        # Set castling availability.
         fen_castling = fen_parts.pop(0)
         for c in fen_castling:
             if c == 'Q':
@@ -89,13 +89,13 @@ class State:
             elif c == 'k':
                 self.castling |= 1L << (7 * 8 + 7)
 
-        # Set en passant
+        # Set en passant.
         fen_passant = fen_parts.pop(0)
         if fen_passant != '-':
             square_idx = moggio.util.chars_to_square(fen_passant)
             self.en_passant = (1L << square_idx)
 
-        # TODO: Halfmove and Fullmove numbers from FEN
+        # TODO: Halfmove and Fullmove numbers from FEN.
 
     def __str__(self):
         """Makes a pretty string, representing a position"""
