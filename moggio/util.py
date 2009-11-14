@@ -1,17 +1,17 @@
 import string
 
-import moggio.defines as defines
+import moggio.defines as defs
 
 """A collection of helper-functions for the moggio library."""
 
 # Used to convert numerical indices to character-representation and backwards.
 _pieces_to_int = {
-    'p': defines.PAWN,      'P': defines.PAWN,
-    'n': defines.KNIGHT,    'N': defines.KNIGHT,
-    'b': defines.BISHOP,    'B': defines.BISHOP,
-    'r': defines.ROOK,      'R': defines.ROOK,
-    'q': defines.QUEEN,     'Q': defines.QUEEN,
-    'k': defines.KING,      'K': defines.KING
+    'p': defs.PAWN,      'P': defs.PAWN,
+    'n': defs.KNIGHT,    'N': defs.KNIGHT,
+    'b': defs.BISHOP,    'B': defs.BISHOP,
+    'r': defs.ROOK,      'R': defs.ROOK,
+    'q': defs.QUEEN,     'Q': defs.QUEEN,
+    'k': defs.KING,      'K': defs.KING
 }
 
 
@@ -22,9 +22,9 @@ def char_to_piece(c):
 def char_to_color(c):
     """Converts a piece in character-representation to its numerical color-value."""
     if c in string.uppercase:
-        return defines.WHITE
+        return defs.WHITE
     else:
-        return defines.BLACK
+        return defs.BLACK
 
 
 def chars_to_square(move):
@@ -43,7 +43,7 @@ def piece_to_char(color, piece):
             ret = key
             break
 
-    if color == defines.WHITE:
+    if color == defs.WHITE:
         ret = ret.upper()
     else:
         ret = ret.lower()
@@ -73,8 +73,8 @@ def set_occupied(occupied, pieces):
     
        Both parameters are a part of the State class
     """
-    occupied[defines.WHITE] = occupied[defines.BLACK] = occupied[defines.BOTH] = 0
+    occupied[defs.WHITE] = occupied[defs.BLACK] = occupied[defs.BOTH] = 0
 
-    for color, piece in defines.PIECES:
+    for color, piece in defs.PIECES:
         occupied[color] |= pieces[color][piece]
-        occupied[defines.BOTH] |= pieces[color][piece]
+        occupied[defs.BOTH] |= pieces[color][piece]

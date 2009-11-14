@@ -1,5 +1,5 @@
 import moggio.util
-import moggio.defines as defines
+import moggio.defines as defs
 
 """Includes the State class."""
 
@@ -28,7 +28,7 @@ class State:
             [0, 0, 0, 0, 0, 0], # WHITE
             [0, 0, 0, 0, 0, 0]  # BLACK
         )
-        self.turn = defines.WHITE
+        self.turn = defs.WHITE
         self.castling = 0
         self.en_passant = None
         self.occupied = [
@@ -71,9 +71,9 @@ class State:
         fen_color = fen_parts.pop(0)
 
         if fen_color.lower() == 'w':
-            self.turn = defines.WHITE
+            self.turn = defs.WHITE
         elif fen_color.lower() == 'b':
-            self.turn = defines.BLACK
+            self.turn = defs.BLACK
         else:
             raise Exception("Invalid FEN: '%s'" % fen)
 
@@ -98,7 +98,7 @@ class State:
         # TODO: Halfmove and Fullmove numbers from FEN.
 
     def __str__(self):
-        """Makes a pretty string, representing a position"""
+        """Makes a pretty string, representing a position."""
         seperator = '+---+---+---+---+---+---+---+---+\n'
         ret = seperator
 
@@ -109,7 +109,7 @@ class State:
                 idx = 1L << (y * 8 + x)
 
                 found = None
-                for color, piece in defines.PIECES:
+                for color, piece in defs.PIECES:
                     if self.pieces[color][piece] & idx:
                         found = moggio.util.piece_to_char(color, piece)
                         break
@@ -134,7 +134,3 @@ class State:
         ret += "\n"
 
         return ret
-
-def fen_to_state(fen):
-    b = Board()
-    return b

@@ -1,4 +1,4 @@
-"""Some convenient variables to make the rest of the code clearer"""
+"""Some convenient variables to make the rest of the code clearer."""
 
 FEN_INIT = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
 
