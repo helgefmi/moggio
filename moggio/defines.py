@@ -13,6 +13,15 @@ ROOK = 3
 QUEEN = 4
 KING = 5
 
+NORTH = 0
+EAST = 1
+SOUTH = 2
+WEST = 3
+NW = 4
+NE = 5
+SE = 6
+SW = 7
+
 PIECES = (
     (WHITE, PAWN),   (BLACK, PAWN),
     (WHITE, KNIGHT), (BLACK, KNIGHT),

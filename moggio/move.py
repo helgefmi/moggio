@@ -48,23 +48,23 @@ def generate_piece_moves(state, color, piece, from_square):
         # First, we check if a one-step move is available, and if so,
         # we set valid_moves to two steps forwards (since we know
         # that the first step wasn't blocked by a piece).
-        valid_moves = moggio.cache.pawn_move_one[color][from_square] \
+        valid_moves = moggio.cache.moves_pawn_one[color][from_square] \
                 & ~state.occupied[defs.BOTH]
 
         if valid_moves:
-            valid_moves = moggio.cache.pawn_move_two[color][from_square] \
+            valid_moves = moggio.cache.moves_pawn_two[color][from_square] \
                 & ~state.occupied[defs.BOTH]
 
         # Check the attack-pattern against opponents and/or en passant availablility.
-        valid_moves |= moggio.cache.pawn_attacks[color][from_square] \
+        valid_moves |= moggio.cache.attacks_pawn[color][from_square] \
             & (state.occupied[opponent] | state.en_passant)
 
     elif piece == defs.KNIGHT:
-        valid_moves = moggio.cache.moves_from[defs.KNIGHT][from_square] \
+        valid_moves = moggio.cache.moves_knight[from_square] \
             & ~state.occupied[color]
 
     elif piece == defs.KING:
-        valid_moves = moggio.cache.moves_from[defs.KING][from_square] \
+        valid_moves = moggio.cache.moves_king[from_square] \
             & ~state.occupied[color]
 
         #TODO: Castling.
