@@ -51,7 +51,7 @@ def piece_to_char(color, piece):
     return ret
 
 
-def square_to_char(square_idx):
+def square_to_chars(square_idx):
     """Converts a numerical square value to its chess representation (0 == a1, 1 = b1, etc)"""
     y, x = square_idx / 8 + 1, square_idx % 8
     return "%s%d" % (chr(ord('a') + x), y)

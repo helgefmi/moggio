@@ -1,6 +1,7 @@
 """Some convenient variables to make the rest of the code clearer."""
 
 FEN_INIT = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
+FEN_TEST = '8/8/8/8/8/5r2/p6r/R3K2R w KQkq - 0 1'
 
 WHITE = 0
 BLACK = 1
@@ -30,3 +31,13 @@ PIECES = (
     (WHITE, QUEEN),  (BLACK, QUEEN),
     (WHITE, KING),   (BLACK, KING)
 )
+
+_count = 0
+for i in range(1,9):
+    for j in 'abcdefgh':
+        name = '%s%s' % (j,i)
+        exec(name + "=" + str(1L << _count)) # a1 = 1<<7, h1 = 1
+        name = name.upper()
+        exec(name + "=" + str(1L << _count)) # A1 = 1<<7, H1 = 1
+        _count += 1
+del _count
