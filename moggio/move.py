@@ -8,21 +8,32 @@ class Move:
     
     """Contains all the information of a move on the chess board"""
 
-    def __init__(self, from_square, to_square, capture=None):
+    def __init__(self, from_square, to_square, capture=None, promotion=None):
         self.from_square = from_square
         self.to_square = to_square
         self.capture = capture
+        self.promotion = promotion
     
     def __str__(self):
         from_square = cache.bitpos_to_square_idx[self.from_square]
         to_square = cache.bitpos_to_square_idx[self.to_square]
 
-        return "%s %s" % (util.square_to_chars(from_square), \
+        ret = "%s %s" % (util.square_to_chars(from_square), \
                           util.square_to_chars(to_square))
+
+        if self.capture != None:
+            ret += ' x %s' % util.piece_to_char(defs.WHITE, self.capture)
+
+        if self.promotion != None:
+            ret += ' -> %s' % util.piece_to_char(defs.WHITE, self.promotion)
+
+        return ret
 
 def generate_moves(state):
     """Generates all the valid moves/captures/promotions in a position"""
     color = state.turn
+    opponent = 1 - color
+
     for piece in xrange(defs.KING + 1):
         bits = state.pieces[color][piece]
 
@@ -35,10 +46,25 @@ def generate_moves(state):
                 to_square = valid_moves & -valid_moves
                 valid_moves &= valid_moves - 1L
                 
-                move = Move(from_square, to_square)
-                yield move
+                # Check if it's a capture. If so, set "capture" to the captured piece.
+                capture = None
+                if to_square & state.occupied[opponent]:
+                    for capture in defs.PIECES:
+                        if to_square & state.pieces[opponent][capture]:
+                            break
 
-            moves = 0
+                    assert capture != defs.KING
+
+                # Check if it's a promotion. If so, generate a move for all possible promotions.
+                if piece == defs.PAWN and to_square & cache.promotion_rank[color]:
+                    for promotion in (defs.KNIGHT, defs.BISHOP, defs.ROOK, defs.QUEEN):
+                        move = Move(from_square, to_square, capture, promotion)
+                        yield move
+
+                else:
+                    # If it's not a promotion, we'll just generate one move.
+                    move = Move(from_square, to_square, capture)
+                    yield move
 
 def generate_piece_moves(state, color, piece, from_square):
     """Generates all the valid moves/captures of one specific piece in a position"""

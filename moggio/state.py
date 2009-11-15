@@ -109,7 +109,7 @@ class State:
                 idx = 1L << (y * 8 + x)
 
                 found = None
-                for color, piece in defs.PIECES:
+                for color, piece in defs.COLOR_PIECES:
                     if self.pieces[color][piece] & idx:
                         found = moggio.util.piece_to_char(color, piece)
                         break

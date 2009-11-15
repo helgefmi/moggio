@@ -80,6 +80,6 @@ def set_occupied(occupied, pieces):
     """
     occupied[defs.WHITE] = occupied[defs.BLACK] = occupied[defs.BOTH] = 0
 
-    for color, piece in defs.PIECES:
+    for color, piece in defs.COLOR_PIECES:
         occupied[color] |= pieces[color][piece]
         occupied[defs.BOTH] |= pieces[color][piece]

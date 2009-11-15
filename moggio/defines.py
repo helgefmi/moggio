@@ -1,7 +1,7 @@
 """Some convenient variables to make the rest of the code clearer."""
 
 FEN_INIT = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1'
-FEN_TEST = '8/8/8/8/8/5r2/p6r/R3K2R w KQkq - 0 1'
+FEN_TEST = '1n6/P7/8/8/8/5r2/p6r/R3K2R w KQkq - 0 1'
 
 WHITE = 0
 BLACK = 1
@@ -23,13 +23,18 @@ NE = 5
 SE = 6
 SW = 7
 
-PIECES = (
+COLOR_PIECES = (
     (WHITE, PAWN),   (BLACK, PAWN),
     (WHITE, KNIGHT), (BLACK, KNIGHT),
     (WHITE, BISHOP), (BLACK, BISHOP),
     (WHITE, ROOK),   (BLACK, ROOK),
     (WHITE, QUEEN),  (BLACK, QUEEN),
     (WHITE, KING),   (BLACK, KING)
+)
+
+PIECES = (
+    PAWN, KNIGHT, BISHOP,
+    ROOK, QUEEN, KING
 )
 
 _count = 0

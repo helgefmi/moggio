@@ -37,6 +37,10 @@ castling_availability = ((_entry.copy(), _entry.copy()),
 # Used to efficiently find out if there are any pieces blocking a castle
 castling_steps = ([0, 0], [0, 0])
 
+# Used to efficiently find out if a pawn can promote (basically set to
+# rank #8 for white and rank #1 for black)
+promotion_rank = [0, 0]
+
 def preprocess():
     """Sets up moves_from and attacks_from.
     
@@ -52,6 +56,11 @@ def preprocess():
 
     castling_steps[defs.BLACK][0] = defs.C8 | defs.D8
     castling_steps[defs.BLACK][1] = defs.F8 | defs.G8
+
+    promotion_rank[defs.WHITE] = defs.A8 | defs.B8 | defs.C8 | defs.D8 \
+                                  | defs.E8 | defs.F8 | defs.G8 | defs.H8
+    promotion_rank[defs.BLACK] = defs.A1 | defs.B1 | defs.C1 | defs.D1 \
+                                  | defs.E1 | defs.F1 | defs.G1 | defs.H1
 
     for y in xrange(0, 8):
         for x in xrange(0, 8):
