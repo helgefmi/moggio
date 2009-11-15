@@ -71,9 +71,9 @@ def generate_piece_moves(state, color, piece, from_square):
         valid_moves = cache.moves_king[from_square] \
             & ~state.occupied[color]
 
-        # We need to first check if the path is free and that castling is available in that path.
-        # Then we need to see if the king or any of the "stepping" squares (F1 and G1 for white king side castle)
-        # are being attacked.
+        # We need to first check if the path is free and that castling is available in that direction.
+        # Then we need to see if the king or any of the "stepping" squares
+        # (F1 and G1 for white king side castle, for instance) are being attacked.
 
         left_castle = cache.castling_availability[color][0][from_square]
         if left_castle & state.castling:
@@ -158,7 +158,7 @@ def generate_piece_moves(state, color, piece, from_square):
 
 
 def is_attacked(state, squares, attacker):
-    """Checks if a set of squares are currently attacked by a colors pieces"""
+    """Checks if a set of squares are currently attacked by an attackers pieces"""
     defender = 1 - attacker
 
     while squares:
@@ -166,7 +166,7 @@ def is_attacked(state, squares, attacker):
         squares &= squares - 1L
 
         # Checking whether a pawn, knight or a king is attacking a square by using
-        # bitwise or on the squares they can possibly attack from.
+        # bitwise and on the squares they can possibly attack from.
         if state.pieces[attacker][defs.PAWN] & cache.attacked_by_pawn[attacker][square]:
             return True
 
@@ -182,7 +182,7 @@ def is_attacked(state, squares, attacker):
         # We need to alternate between using the highest and the lowest bit to bitwise and
         # both rook and bishop moves.
 
-        # Pretend to generate moves from the defenders POV, and see if the valid moves fits witH
+        # Pretend to generate moves from the defenders POV, and see if the valid moves fits with
         # a black bishop, rook or queen on the board.
         bishop_and_queen = state.pieces[attacker][defs.BISHOP] | state.pieces[attacker][defs.QUEEN]
         if bishop_and_queen & generate_piece_moves(state, defender, defs.BISHOP, square):
