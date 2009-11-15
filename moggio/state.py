@@ -30,7 +30,7 @@ class State:
         )
         self.turn = defs.WHITE
         self.castling = 0
-        self.en_passant = None
+        self.en_passant = 0
         self.occupied = [
             0, 0, 0 # WHITE, BLACK, BOTH
         ]
@@ -115,7 +115,7 @@ class State:
                         break
 
                 extra = ' '
-                if self.en_passant and self.en_passant & idx:
+                if self.en_passant & idx:
                     extra = '*'
                 if self.castling and self.castling & idx:
                     extra = '*'
