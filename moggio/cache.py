@@ -33,6 +33,7 @@ bitpos_to_square_idx = dict([(1L << x, x) for x in xrange(64)])
 # Used to efficiently find out if castling is available
 castling_availability = ((_entry.copy(), _entry.copy()),
                          (_entry.copy(), _entry.copy()))
+castling_by_color = [0, 0]
 
 # Used to efficiently find out if there are any pieces blocking a castle
 castling_steps = ([0, 0], [0, 0])
@@ -48,14 +49,17 @@ def preprocess():
     """
     castling_availability[defs.WHITE][0][defs.E1] = defs.A1
     castling_availability[defs.WHITE][1][defs.E1] = defs.H1
-    castling_availability[defs.BLACK][0][defs.E1] = defs.A8
-    castling_availability[defs.BLACK][1][defs.E1] = defs.H8
+    castling_availability[defs.BLACK][0][defs.E8] = defs.A8
+    castling_availability[defs.BLACK][1][defs.E8] = defs.H8
 
     castling_steps[defs.WHITE][0] = defs.C1 | defs.D1
     castling_steps[defs.WHITE][1] = defs.F1 | defs.G1
 
     castling_steps[defs.BLACK][0] = defs.C8 | defs.D8
     castling_steps[defs.BLACK][1] = defs.F8 | defs.G8
+
+    castling_by_color[defs.WHITE]= defs.A1 | defs.H1
+    castling_by_color[defs.BLACK]= defs.A8 | defs.H8
 
     promotion_rank[defs.WHITE] = defs.A8 | defs.B8 | defs.C8 | defs.D8 \
                                   | defs.E8 | defs.F8 | defs.G8 | defs.H8

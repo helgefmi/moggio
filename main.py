@@ -5,11 +5,10 @@ import moggio.cache
 import moggio.state
 import moggio.move
 import moggio.util
+import moggio.test
 
 moggio.cache.preprocess()
 
 position = moggio.state.State(defines.FEN_TEST)
-print position
 
-for move in moggio.move.generate_moves(position):
-    print move
+print moggio.test.perft(position, 5)

@@ -1,5 +1,6 @@
-import moggio.util
+import moggio.util as util
 import moggio.defines as defs
+import moggio.cache as cache
 
 """Includes the State class."""
 
@@ -35,6 +36,79 @@ class State:
             0, 0, 0 # WHITE, BLACK, BOTH
         ]
 
+    def copy(self):
+        """Makes an independent copy of a state instance"""
+        s = State()
+
+        s.pieces = (
+            self.pieces[0][:],
+            self.pieces[1][:]
+        )
+        s.turn = self.turn
+        s.castling = self.castling
+        s.en_passant = self.en_passant
+        s.occupied = self.occupied[:]
+
+        return s
+
+    def make_move(self, move):
+        opponent = 1 - self.turn
+
+        # Remove the piece that moved from the board.
+        self.pieces[self.turn][move.from_piece] ^= move.from_square
+        self.occupied[self.turn] ^= move.from_square
+
+        # If it is a capture, we need to remove the opponent piece as well.
+        if move.capture != None:
+            # Remember to clear castling availability if we capture a rook.
+            if self.castling & move.to_square:
+                self.castling &= ~move.to_square
+
+            to_remove_square = move.to_square
+            if move.from_piece == defs.PAWN and move.to_square & self.en_passant:
+                # The piece captured with en passant; we need to clear the board of the captured piece.
+                # We simply use the pawn move square of the opponent to find out which square to clear.
+                to_remove_square = cache.moves_pawn_one[opponent][move.to_square]
+
+            # Remove the captured piece off the board.
+            self.pieces[opponent][move.capture] ^= to_remove_square
+            self.occupied[opponent] ^= to_remove_square
+
+        # Update the board with the new position of the piece.
+        if move.promotion:
+            self.pieces[self.turn][move.promotion] ^= move.to_square
+        else:
+            self.pieces[self.turn][move.from_piece] ^= move.to_square
+
+        # Update "occupied" with the same piece as above.
+        self.occupied[self.turn] ^= move.to_square
+        
+        if move.from_piece == defs.KING:
+            #TODO: This can be made more efficient by caching more stuff..
+            # We could first see if the move was >1 step (one bitwise and and one lookup),
+            # then we could have a cache element where cached[to_square] gives the place where
+            # the rook should be positioned (one bitwise xor and one lookup).
+            left_castle = cache.castling_availability[self.turn][0][move.from_square]
+            if (left_castle << 2) & move.to_square:
+                self.pieces[self.turn][defs.ROOK] ^= left_castle | left_castle << 3
+                self.occupied[self.turn] ^= left_castle | left_castle << 3
+
+            right_castle = cache.castling_availability[self.turn][1][move.from_square]
+            if (right_castle >> 1) & move.to_square:
+                self.pieces[self.turn][defs.ROOK] ^= right_castle | right_castle >> 2
+                self.occupied[self.turn] ^= right_castle | right_castle >> 2
+
+            # Clear the appropriate castling availability.
+            self.castling &= ~cache.castling_by_color[self.turn]
+
+        elif move.from_piece == defs.ROOK:
+            # Clear the appropriate castling availability.
+            self.castling &= ~move.from_square
+
+        self.turn ^= 1
+        self.occupied[defs.BOTH] = \
+            self.occupied[defs.WHITE] | self.occupied[defs.BLACK]
+
     def set_fen(self, fen):
         """Sets the board according to Forsyth-Edwards Notation.
         
@@ -56,8 +130,8 @@ class State:
                 piece_idx += int(c)
             else:
                 try:
-                    piece = moggio.util.char_to_piece(c)
-                    color = moggio.util.char_to_color(c)
+                    piece = util.char_to_piece(c)
+                    color = util.char_to_color(c)
                     self.pieces[color][piece] |= (1L << piece_idx)
                 except KeyError:
                     raise Exception("Invalid FEN: '%s'" % fen)
@@ -65,7 +139,7 @@ class State:
                     piece_idx += 1
 
         # Update self.occupied with the occupied squares in self.pieces.
-        moggio.util.set_occupied(self.occupied, self.pieces)
+        util.set_occupied(self.occupied, self.pieces)
 
         # Set active color.
         fen_color = fen_parts.pop(0)
@@ -92,7 +166,7 @@ class State:
         # Set en passant.
         fen_passant = fen_parts.pop(0)
         if fen_passant != '-':
-            square_idx = moggio.util.chars_to_square(fen_passant)
+            square_idx = util.chars_to_square(fen_passant)
             self.en_passant = (1L << square_idx)
 
         # TODO: Halfmove and Fullmove numbers from FEN.
@@ -111,7 +185,7 @@ class State:
                 found = None
                 for color, piece in defs.COLOR_PIECES:
                     if self.pieces[color][piece] & idx:
-                        found = moggio.util.piece_to_char(color, piece)
+                        found = util.piece_to_char(color, piece)
                         break
 
                 extra = ' '
@@ -121,7 +195,7 @@ class State:
                     extra = '*'
 
                 if found:
-                    ret += ' ' + moggio.util.piece_to_char(color, piece) + extra + '|'
+                    ret += ' ' + util.piece_to_char(color, piece) + extra + '|'
                 else:
                     squareColor = '  '
                     if (y ^ x) & 1 == 0:

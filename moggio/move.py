@@ -8,9 +8,10 @@ class Move:
     
     """Contains all the information of a move on the chess board"""
 
-    def __init__(self, from_square, to_square, capture=None, promotion=None):
+    def __init__(self, from_square, to_square, from_piece, capture=None, promotion=None):
         self.from_square = from_square
         self.to_square = to_square
+        self.from_piece = from_piece
         self.capture = capture
         self.promotion = promotion
     
@@ -58,18 +59,21 @@ def generate_moves(state):
                         if to_square & state.pieces[opponent][capture]:
                             break
 
-                    assert capture != defs.KING
+                    #assert capture != defs.KING
+
+                # En passant is a capture as well.
+                if to_square & state.en_passant:
+                    capture = defs.PAWN
 
                 # Check if it's a promotion. If so, generate a move for all possible promotions.
                 if piece == defs.PAWN and to_square & cache.promotion_rank[color]:
                     for promotion in xrange(defs.KNIGHT, defs.KING):
-                        move = Move(from_square, to_square, capture, promotion)
-                        yield move
+                        moves.append(Move(from_square, to_square, piece, capture, promotion))
 
                 else:
                     # If it's not a promotion, we'll just generate one move.
-                    move = Move(from_square, to_square, capture)
-                    yield move
+                    moves.append(Move(from_square, to_square, piece, capture))
+    return moves
 
 def generate_piece_moves(state, color, piece, from_square):
     """Returns a 64bit int containing the valid moves/captures of one specific piece in a position
