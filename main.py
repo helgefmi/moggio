@@ -11,4 +11,4 @@ moggio.cache.preprocess()
 
 position = moggio.state.State(defines.FEN_TEST)
 
-print moggio.test.perft(position, 5)
+print moggio.test.perft(position, 4)

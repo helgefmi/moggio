@@ -72,14 +72,3 @@ def int_to_bitmap(n):
         ret += '\n'
 
     return ret
-
-def set_occupied(occupied, pieces):
-    """Sets up 'occupied' to reflect the occupied squares in 'pieces'
-    
-       Both parameters are a part of the State class
-    """
-    occupied[defs.WHITE] = occupied[defs.BLACK] = occupied[defs.BOTH] = 0
-
-    for color, piece in defs.COLOR_PIECES:
-        occupied[color] |= pieces[color][piece]
-        occupied[defs.BOTH] |= pieces[color][piece]

@@ -52,6 +52,8 @@ class State:
         return s
 
     def make_move(self, move):
+        #TODO:
+        # We're forgetting to set/clear en_passant!
         opponent = 1 - self.turn
 
         # Remove the piece that moved from the board.
@@ -139,7 +141,10 @@ class State:
                     piece_idx += 1
 
         # Update self.occupied with the occupied squares in self.pieces.
-        util.set_occupied(self.occupied, self.pieces)
+        self.occupied[defs.WHITE] = self.occupied[defs.BLACK] = self.occupied[defs.BOTH] = 0
+        for color, piece in defs.COLOR_PIECES:
+            self.occupied[color] |= self.pieces[color][piece]
+            self.occupied[defs.BOTH] |= self.pieces[color][piece]
 
         # Set active color.
         fen_color = fen_parts.pop(0)
