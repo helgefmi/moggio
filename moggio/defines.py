@@ -32,11 +32,6 @@ COLOR_PIECES = (
     (WHITE, KING),   (BLACK, KING)
 )
 
-PIECES = (
-    PAWN, KNIGHT, BISHOP,
-    ROOK, QUEEN, KING
-)
-
 _count = 0
 for i in range(1,9):
     for j in 'abcdefgh':

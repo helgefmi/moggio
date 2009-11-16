@@ -30,9 +30,14 @@ class Move:
         return ret
 
 def generate_moves(state):
-    """Generates all the valid moves/captures/promotions in a position"""
+    """Returns a list of the available moves/captures/promotions in a position, for the player in turn.
+
+       The generated moves might leave the king in check (invalid move), so this has to be checked elsewhere.
+    """
     color = state.turn
     opponent = 1 - color
+
+    moves = []
 
     for piece in xrange(defs.KING + 1):
         bits = state.pieces[color][piece]
@@ -49,7 +54,7 @@ def generate_moves(state):
                 # Check if it's a capture. If so, set "capture" to the captured piece.
                 capture = None
                 if to_square & state.occupied[opponent]:
-                    for capture in defs.PIECES:
+                    for capture in xrange(defs.KING + 1):
                         if to_square & state.pieces[opponent][capture]:
                             break
 
@@ -57,7 +62,7 @@ def generate_moves(state):
 
                 # Check if it's a promotion. If so, generate a move for all possible promotions.
                 if piece == defs.PAWN and to_square & cache.promotion_rank[color]:
-                    for promotion in (defs.KNIGHT, defs.BISHOP, defs.ROOK, defs.QUEEN):
+                    for promotion in xrange(defs.KNIGHT, defs.KING):
                         move = Move(from_square, to_square, capture, promotion)
                         yield move
 
@@ -67,7 +72,10 @@ def generate_moves(state):
                     yield move
 
 def generate_piece_moves(state, color, piece, from_square):
-    """Generates all the valid moves/captures of one specific piece in a position"""
+    """Returns a 64bit int containing the valid moves/captures of one specific piece in a position
+    
+       The generated moves might leave the king in check (invalid move), so this has to be checked elsewhere.
+    """
     valid_moves = 0
     opponent = 1 - color
 
@@ -184,7 +192,10 @@ def generate_piece_moves(state, color, piece, from_square):
 
 
 def is_attacked(state, squares, attacker):
-    """Checks if a set of squares are currently attacked by an attackers pieces"""
+    """Checks if a set of squares are currently attacked by an attackers pieces
+    
+       Returns True or False.
+    """
     defender = 1 - attacker
 
     while squares:
@@ -207,6 +218,7 @@ def is_attacked(state, squares, attacker):
         # and see if the direction from that square hits bishop_and_queen / rook_and_queen.
         # We need to alternate between using the highest and the lowest bit to bitwise and
         # both rook and bishop moves.
+        # http://www.talkchess.com/forum/viewtopic.php?t=30356
 
         # Pretend to generate moves from the defenders POV, and see if the valid moves fits with
         # a black bishop, rook or queen on the board.

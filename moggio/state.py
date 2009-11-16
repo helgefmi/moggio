@@ -81,13 +81,13 @@ class State:
         fen_castling = fen_parts.pop(0)
         for c in fen_castling:
             if c == 'Q':
-                self.castling |= 1L << 0
+                self.castling |= defs.A1
             elif c == 'K':
-                self.castling |= 1L << 7
+                self.castling |= defs.H1
             elif c == 'q':
-                self.castling |= 1L << (7 * 8)
+                self.castling |= defs.A8
             elif c == 'k':
-                self.castling |= 1L << (7 * 8 + 7)
+                self.castling |= defs.H8
 
         # Set en passant.
         fen_passant = fen_parts.pop(0)

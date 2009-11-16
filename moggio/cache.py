@@ -42,7 +42,7 @@ castling_steps = ([0, 0], [0, 0])
 promotion_rank = [0, 0]
 
 def preprocess():
-    """Sets up moves_from and attacks_from.
+    """Generates the cache from scratch.
     
        Should only be called once.
     """
