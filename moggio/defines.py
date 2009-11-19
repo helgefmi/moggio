@@ -4,9 +4,9 @@ _count = 0
 for i in range(1,9):
     for j in 'abcdefgh':
         name = '%s%s' % (j,i)
-        exec(name + "=" + str(1L << _count)) # a1 = 1<<7, h1 = 1
+        exec(name + "=" + str(1 << _count)) # a1 = 1<<7, h1 = 1
         name = name.upper()
-        exec(name + "=" + str(1L << _count)) # A1 = 1<<7, H1 = 1
+        exec(name + "=" + str(1 << _count)) # A1 = 1<<7, H1 = 1
         _count += 1
 del _count
 

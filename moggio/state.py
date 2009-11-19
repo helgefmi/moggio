@@ -18,8 +18,6 @@ class State:
 
     def __init__(self, fen=None):
         """If fen is not given, the instance will represent an empty board."""
-        self.reset()
-
         if fen:
             self.set_fen(fen)
 
@@ -52,8 +50,6 @@ class State:
         return s
 
     def make_move(self, move):
-        #TODO:
-        # We're forgetting to set/clear en_passant!
         opponent = 1 - self.turn
 
         # Remove the piece that moved from the board.
@@ -85,6 +81,8 @@ class State:
         # Update "occupied" with the same piece as above.
         self.occupied[self.turn] ^= move.to_square
         
+        self.en_passant = 0
+
         if move.from_piece == defs.KING:
             #TODO: This can be made more efficient by caching more stuff..
             # We could first see if the move was >1 step (one bitwise and and one lookup),
@@ -107,6 +105,11 @@ class State:
             # Clear the appropriate castling availability.
             self.castling &= ~move.from_square
 
+        # Clear / set en_passant
+        elif move.from_piece == defs.PAWN:
+            if ~cache.moves_pawn_one[self.turn][move.from_square] & move.to_square & cache.moves_pawn_two[self.turn][move.from_square]:
+                self.en_passant = cache.moves_pawn_one[self.turn][move.from_square]
+        
         self.turn ^= 1
         self.occupied[defs.BOTH] = \
             self.occupied[defs.WHITE] | self.occupied[defs.BLACK]
@@ -134,7 +137,7 @@ class State:
                 try:
                     piece = util.char_to_piece(c)
                     color = util.char_to_color(c)
-                    self.pieces[color][piece] |= (1L << piece_idx)
+                    self.pieces[color][piece] |= (1 << piece_idx)
                 except KeyError:
                     raise Exception("Invalid FEN: '%s'" % fen)
                 else:
@@ -172,7 +175,7 @@ class State:
         fen_passant = fen_parts.pop(0)
         if fen_passant != '-':
             square_idx = util.chars_to_square(fen_passant)
-            self.en_passant = (1L << square_idx)
+            self.en_passant = (1 << square_idx)
 
         # TODO: Halfmove and Fullmove numbers from FEN.
 
@@ -185,7 +188,7 @@ class State:
             ret += '|'
 
             for x in xrange(0, 8):
-                idx = 1L << (y * 8 + x)
+                idx = 1 << (y * 8 + x)
 
                 found = None
                 for color, piece in defs.COLOR_PIECES:

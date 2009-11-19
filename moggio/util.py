@@ -65,7 +65,7 @@ def int_to_bitmap(n):
         for x in xrange(0, 8):
             idx = y * 8 + x
 
-            if n & (1L << idx):
+            if n & (1 << idx):
                 ret += '*'
             else:
                 ret += '.'

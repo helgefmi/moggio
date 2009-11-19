@@ -19,14 +19,16 @@ class Move:
         from_square = cache.bitpos_to_square_idx[self.from_square]
         to_square = cache.bitpos_to_square_idx[self.to_square]
 
-        ret = "%s %s" % (util.square_to_chars(from_square), \
+        seperator = (' ', 'x')[self.capture != None]
+        ret = "%s%s%s" % (util.square_to_chars(from_square), \
+                          seperator, \
                           util.square_to_chars(to_square))
 
-        if self.capture != None:
-            ret += ' x %s' % util.piece_to_char(defs.WHITE, self.capture)
+        #if self.capture != None:
+        #    ret += '(%s)' % util.piece_to_char(defs.WHITE, self.capture)
 
-        if self.promotion != None:
-            ret += ' -> %s' % util.piece_to_char(defs.WHITE, self.promotion)
+        #if self.promotion != None:
+        #    ret += ' -> %s' % util.piece_to_char(defs.WHITE, self.promotion)
 
         return ret
 
@@ -45,12 +47,12 @@ def generate_moves(state):
 
         while bits:
             from_square = bits & -bits
-            bits &= bits - 1L
+            bits &= bits - 1
 
             valid_moves = generate_piece_moves(state, color, piece, from_square)
             while valid_moves:
                 to_square = valid_moves & -valid_moves
-                valid_moves &= valid_moves - 1L
+                valid_moves &= valid_moves - 1
                 
                 # Check if it's a capture. If so, set "capture" to the captured piece.
                 capture = None
@@ -59,10 +61,11 @@ def generate_moves(state):
                         if to_square & state.pieces[opponent][capture]:
                             break
 
-                    #assert capture != defs.KING
+                    if capture == defs.KING:
+                        return None
 
                 # En passant is a capture as well.
-                if to_square & state.en_passant:
+                if piece == defs.PAWN and to_square & state.en_passant:
                     capture = defs.PAWN
 
                 # Check if it's a promotion. If so, generate a move for all possible promotions.
@@ -82,32 +85,34 @@ def generate_piece_moves(state, color, piece, from_square):
     """
     valid_moves = 0
     opponent = 1 - color
+    occupied = state.occupied
+    pieces = state.pieces
 
     if piece == defs.PAWN:
         # First, we check if a one-step move is available, and if so,
         # we set valid_moves to two steps forwards (since we know
         # that the first step wasn't blocked by a piece).
         valid_moves = cache.moves_pawn_one[color][from_square] \
-                & ~state.occupied[defs.BOTH]
+                & ~occupied[defs.BOTH]
 
         if valid_moves:
             valid_moves = cache.moves_pawn_two[color][from_square] \
-                & ~state.occupied[defs.BOTH]
+                & ~occupied[defs.BOTH]
 
         valid_moves |= cache.attacks_pawn[color][from_square] \
             & state.en_passant
 
         # Check the attack-pattern against opponents and/or en passant availablility.
         valid_moves |= cache.attacks_pawn[color][from_square] \
-            & state.occupied[opponent]
+            & occupied[opponent]
 
     elif piece == defs.KNIGHT:
         valid_moves = cache.moves_knight[from_square] \
-            & ~state.occupied[color]
+            & ~occupied[color]
 
     elif piece == defs.KING:
         valid_moves = cache.moves_king[from_square] \
-            & ~state.occupied[color]
+            & ~occupied[color]
 
         # We need to first check if the path is free and that castling is available in that direction.
         # Then we need to see if the king or any of the "stepping" squares
@@ -116,81 +121,85 @@ def generate_piece_moves(state, color, piece, from_square):
         left_castle = cache.castling_availability[color][0][from_square]
         if left_castle & state.castling:
             steps = cache.castling_steps[color][0]
-            if (not steps & state.occupied[defs.BOTH]) \
+            move_steps = steps | left_castle << 1
+            if (not move_steps & occupied[defs.BOTH]) \
                 and not is_attacked(state, steps | from_square, opponent):
                 valid_moves |= left_castle << 2
 
         right_castle = cache.castling_availability[color][1][from_square]
         if right_castle & state.castling:
             steps = cache.castling_steps[color][1]
-            if (not steps & state.occupied[defs.BOTH]) \
+            if (not steps & occupied[defs.BOTH]) \
                 and not is_attacked(state, steps | from_square, opponent):
                 valid_moves |= right_castle >> 1
     else:
-        # TODO: Needs more rotated bitboards!
+        # TODO: Needs more rotated or magic or something bitboards!
+        directions = cache.directions
+        occupied_both = occupied[defs.BOTH]
+
         if piece == defs.BISHOP or piece == defs.QUEEN:
-            nw_moves = cache.directions[defs.NW][from_square] & state.occupied[defs.BOTH]
+            nw_moves = directions[defs.NW][from_square] & occupied_both
             nw_moves = (nw_moves << 7) | (nw_moves << 14) \
                         | (nw_moves << 21) | (nw_moves << 28) \
                         | (nw_moves << 35) | (nw_moves << 42)
-            nw_moves &= cache.directions[defs.NW][from_square]
-            nw_moves ^= cache.directions[defs.NW][from_square]
+            nw_moves &= directions[defs.NW][from_square]
+            nw_moves ^= directions[defs.NW][from_square]
 
-            ne_moves = cache.directions[defs.NE][from_square] & state.occupied[defs.BOTH]
+            ne_moves = directions[defs.NE][from_square] & occupied_both
             ne_moves = (ne_moves << 9) | (ne_moves << 18) \
                         | (ne_moves << 27) | (ne_moves << 36) \
                         | (ne_moves << 45) | (ne_moves << 54)
-            ne_moves &= cache.directions[defs.NE][from_square]
-            ne_moves ^= cache.directions[defs.NE][from_square]
+            ne_moves &= directions[defs.NE][from_square]
+            ne_moves ^= directions[defs.NE][from_square]
 
-            se_moves = cache.directions[defs.SE][from_square] & state.occupied[defs.BOTH]
+            se_moves = directions[defs.SE][from_square] & occupied_both
             se_moves = (se_moves >> 7) | (se_moves >> 14) \
                         | (se_moves >> 21) | (se_moves >> 28) \
                         | (se_moves >> 35) | (se_moves >> 42)
-            se_moves &= cache.directions[defs.SE][from_square]
-            se_moves ^= cache.directions[defs.SE][from_square]
+            se_moves &= directions[defs.SE][from_square]
+            se_moves ^= directions[defs.SE][from_square]
 
-            sw_moves = cache.directions[defs.SW][from_square] & state.occupied[defs.BOTH]
+            sw_moves = directions[defs.SW][from_square] & occupied_both
             sw_moves = (sw_moves >> 9) | (sw_moves >> 18) \
                         | (sw_moves >> 27) | (sw_moves >> 36) \
                         | (sw_moves >> 45) | (sw_moves >> 54)
-            sw_moves &= cache.directions[defs.SW][from_square]
-            sw_moves ^= cache.directions[defs.SW][from_square]
+            sw_moves &= directions[defs.SW][from_square]
+            sw_moves ^= directions[defs.SW][from_square]
 
             valid_moves |= (nw_moves | ne_moves | se_moves | sw_moves) \
-                & ~state.occupied[color]
+                & ~occupied[color]
 
         if piece == defs.ROOK or piece == defs.QUEEN:
-            right_moves = cache.directions[defs.EAST][from_square] & state.occupied[defs.BOTH]
+            right_moves = directions[defs.EAST][from_square] & occupied_both
             right_moves = (right_moves << 1) | (right_moves << 2) \
                         | (right_moves << 3) | (right_moves << 4) \
                         | (right_moves << 5) | (right_moves << 6)
-            right_moves &= cache.directions[defs.EAST][from_square]
-            right_moves ^= cache.directions[defs.EAST][from_square]
+            right_moves &= directions[defs.EAST][from_square]
+            right_moves ^= directions[defs.EAST][from_square]
 
-            left_moves = cache.directions[defs.WEST][from_square] & state.occupied[defs.BOTH]
+            left_moves = directions[defs.WEST][from_square] & occupied_both
             left_moves = (left_moves >> 1) | (left_moves >> 2) \
                         | (left_moves >> 3) | (left_moves >> 4) \
                         | (left_moves >> 5) | (left_moves >> 6)
-            left_moves &= cache.directions[defs.WEST][from_square]
-            left_moves ^= cache.directions[defs.WEST][from_square]
+            left_moves &= directions[defs.WEST][from_square]
+            left_moves ^= directions[defs.WEST][from_square]
 
-            up_moves = cache.directions[defs.NORTH][from_square] & state.occupied[defs.BOTH]
+            up_moves = directions[defs.NORTH][from_square] & occupied_both
             up_moves = (up_moves << 8) | (up_moves << 16) \
                         | (up_moves << 24) | (up_moves << 32) \
                         | (up_moves << 40) | (up_moves << 48)
-            up_moves &= cache.directions[defs.NORTH][from_square]
-            up_moves ^= cache.directions[defs.NORTH][from_square]
+            up_moves &= directions[defs.NORTH][from_square]
+            up_moves ^= directions[defs.NORTH][from_square]
 
-            down_moves = cache.directions[defs.SOUTH][from_square] & state.occupied[defs.BOTH]
+            down_moves = directions[defs.SOUTH][from_square] & occupied_both
             down_moves = (down_moves >> 8) | (down_moves >> 16) \
                         | (down_moves >> 24) | (down_moves >> 32) \
                         | (down_moves >> 40) | (down_moves >> 48)
-            down_moves &= cache.directions[defs.SOUTH][from_square]
-            down_moves ^= cache.directions[defs.SOUTH][from_square]
+            down_moves &= directions[defs.SOUTH][from_square]
+            down_moves ^= directions[defs.SOUTH][from_square]
 
             valid_moves |= (right_moves | left_moves | up_moves | down_moves) \
-                & ~state.occupied[color]
+                & ~occupied[color]
 
     return valid_moves
 
@@ -201,20 +210,21 @@ def is_attacked(state, squares, attacker):
        Returns True or False.
     """
     defender = 1 - attacker
+    attacker_pieces = state.pieces[attacker]
 
     while squares:
         square = squares & -squares
-        squares &= squares - 1L
+        squares &= squares - 1
 
         # Checking whether a pawn, knight or a king is attacking a square by using
         # bitwise and on the squares they can possibly attack from.
-        if state.pieces[attacker][defs.PAWN] & cache.attacked_by_pawn[attacker][square]:
+        if attacker_pieces[defs.PAWN] & cache.attacked_by_pawn[attacker][square]:
             return True
 
-        if state.pieces[attacker][defs.KNIGHT] & cache.moves_knight[square]:
+        if attacker_pieces[defs.KNIGHT] & cache.moves_knight[square]:
             return True
 
-        if state.pieces[attacker][defs.KING] & cache.moves_king[square]:
+        if attacker_pieces[defs.KING] & cache.moves_king[square]:
             return True
 
         # TODO:
@@ -226,12 +236,12 @@ def is_attacked(state, squares, attacker):
 
         # Pretend to generate moves from the defenders POV, and see if the valid moves fits with
         # a black bishop, rook or queen on the board.
-        bishop_and_queen = state.pieces[attacker][defs.BISHOP] | state.pieces[attacker][defs.QUEEN]
-        if bishop_and_queen & generate_piece_moves(state, defender, defs.BISHOP, square):
+        if (attacker_pieces[defs.BISHOP] | attacker_pieces[defs.QUEEN]) \
+             & generate_piece_moves(state, defender, defs.BISHOP, square):
             return True
 
-        rook_and_queen = state.pieces[attacker][defs.ROOK] | state.pieces[attacker][defs.QUEEN]
-        if rook_and_queen & generate_piece_moves(state, defender, defs.ROOK, square):
+        if (attacker_pieces[defs.ROOK] | attacker_pieces[defs.QUEEN]) \
+            & generate_piece_moves(state, defender, defs.ROOK, square):
             return True
 
     return False
